@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
         const [
           totalListings,
           activePickups,
-          completedPickups,
           userData,
           wallet,
+          recentPickups,
         ] = await Promise.all([
           prisma.wasteListing.count({
             where: { userId: user.userId },
@@ -31,12 +31,6 @@ export async function GET(request: NextRequest) {
               status: {
                 notIn: ["COMPLETED", "CANCELLED"],
               },
-            },
-          }),
-          prisma.pickupRequest.count({
-            where: {
-              generatorId: user.userId,
-              status: "COMPLETED",
             },
           }),
           prisma.user.findUnique({
@@ -51,16 +45,32 @@ export async function GET(request: NextRequest) {
             where: { userId: user.userId },
             select: { rewardPoints: true },
           }),
+          prisma.pickupRequest.findMany({
+            where: { generatorId: user.userId },
+            orderBy: { scheduledAt: "desc" },
+            take: 5,
+            include: {
+              wasteItems: { select: { id: true } },
+              recycler: { select: { businessName: true } },
+            },
+          }),
         ]);
 
         return apiResponse(
           {
             totalListings,
             activePickups,
-            completedPickups,
-            totalWeightRecycled: userData?.totalWeightKg || 0,
+            weightRecycled: userData?.totalWeightKg || 0,
             co2Saved: userData?.co2SavedKg || 0,
             rewardPoints: wallet?.rewardPoints || 0,
+            recentPickups: recentPickups.map((pickup) => ({
+              id: pickup.id,
+              scheduledDate: pickup.scheduledAt.toISOString(),
+              status: pickup.status,
+              itemCount: pickup.wasteItems.length,
+              estimatedWeight: pickup.estimatedWeight ?? 0,
+              recyclerName: pickup.recycler?.businessName,
+            })),
           },
           "Generator dashboard stats retrieved",
         );
