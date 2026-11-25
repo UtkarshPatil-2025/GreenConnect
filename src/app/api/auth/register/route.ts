@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, generateTokens, generateOTP } from "@/lib/auth";
+import { hashPassword, generateTokens } from "@/lib/auth";
 import { apiResponse, apiError } from "@/lib/utils";
 import { signupSchema } from "@/lib/validations";
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(password);
 
     // Create user with related records in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const user = await prisma.$transaction(async (tx) => {
       // Create user
       const user = await tx.user.create({
         data: {
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
           phone,
           passwordHash,
           role,
+          emailVerified: true,
         },
       });
 
@@ -70,38 +71,27 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Generate 6-digit OTP for email verification
-      const otpCode = generateOTP(6);
-      await tx.otpCode.create({
-        data: {
-          userId: user.id,
-          code: otpCode,
-          type: "EMAIL_VERIFY",
-          expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-        },
-      });
-
-      return { user, otpCode };
+      return user;
     });
 
     // Generate JWT tokens
     const tokens = generateTokens({
-      userId: result.user.id,
-      email: result.user.email,
-      role: result.user.role,
+      userId: user.id,
+      email: user.email,
+      role: user.role,
     });
 
     // Save refresh token to DB
     await prisma.refreshToken.create({
       data: {
-        userId: result.user.id,
+        userId: user.id,
         token: tokens.refreshToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
     });
 
     // Return user without passwordHash
-    const { passwordHash: _, ...userWithoutPassword } = result.user;
+    const { passwordHash: _, ...userWithoutPassword } = user;
 
     return apiResponse(
       {

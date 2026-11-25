@@ -57,15 +57,16 @@ export default function SignupPage() {
       });
 
       if (res.success && res.data) {
-        localStorage.setItem("pendingUserId", res.data.user.id);
-        localStorage.setItem("pendingEmail", email);
-        if (res.data.tokens) {
-          localStorage.setItem("accessToken", res.data.tokens.accessToken);
-          localStorage.setItem("refreshToken", res.data.tokens.refreshToken);
-          localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("accessToken", res.data.tokens.accessToken);
+        localStorage.setItem("refreshToken", res.data.tokens.refreshToken);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        toast.success("Account created successfully!");
+
+        if (res.data.user.role === "RECYCLER") {
+          router.push("/recycler/dashboard");
+        } else {
+          router.push("/dashboard");
         }
-        toast.success("Account registered! Please verify the OTP sent to your email.");
-        router.push(`/verify?userId=${res.data.user.id}&email=${encodeURIComponent(email)}`);
       }
     } catch (err: unknown) {
       const error = err as Error;

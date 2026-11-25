@@ -9,7 +9,7 @@
 1. **Authentication & Multi-Role RBAC**
    - Generator vs. Recycler sign up
    - Password strength analyzer
-   - 6-digit OTP verification & password recovery
+   - OTP-based password recovery
    - Secure JWT tokens (access + refresh) with auto-rotation
 
 2. **Smart E-Waste Categorization & Listing**
