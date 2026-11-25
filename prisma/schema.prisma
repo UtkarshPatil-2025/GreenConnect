@@ -1,0 +1,467 @@
+// GreenCircuit - E-Waste Management System
+// Prisma Schema - Phase 1 (Foundation)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  GENERATOR
+  RECYCLER
+  PICKUP_AGENT
+  ADMIN
+  REGULATOR
+}
+
+enum VerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum RecyclerTier {
+  BASIC
+  VERIFIED
+  PREMIUM
+  CERTIFIED_GREEN
+}
+
+enum WasteCategory {
+  COMPUTERS
+  MOBILES
+  TELEVISIONS
+  BATTERIES
+  CABLES
+  APPLIANCES
+  PCBS
+  PERIPHERALS
+  PRINTERS
+  NETWORKING
+  MEDICAL_DEVICES
+  OTHER
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  MATCHED
+  PICKED_UP
+  COMPLETED
+  CANCELLED
+}
+
+enum PickupStatus {
+  REQUESTED
+  CONFIRMED
+  AGENT_ASSIGNED
+  EN_ROUTE
+  ARRIVED
+  PICKED_UP
+  IN_TRANSIT
+  AT_FACILITY
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum HazardLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ProcessingStatus {
+  RECEIVED
+  SORTED
+  DISMANTLED
+  MATERIAL_RECOVERY
+  DISPOSED
+  COMPLETED
+}
+
+// ============================================================
+// USER & AUTH
+// ============================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  phone           String?   @unique
+  passwordHash    String
+  name            String
+  avatar          String?
+  role            UserRole  @default(GENERATOR)
+  emailVerified   Boolean   @default(false)
+  phoneVerified   Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  impactScore     Float     @default(0)
+  totalWeightKg   Float     @default(0)
+  co2SavedKg      Float     @default(0)
+
+  // Address
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  postalCode      String?
+  country         String    @default("India")
+  latitude        Float?
+  longitude       Float?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  recyclerProfile   Recycler?
+  wasteListings     WasteListing[]
+  pickupsAsGenerator PickupRequest[] @relation("GeneratorPickups")
+  pickupsAsAgent    PickupRequest[]  @relation("AgentPickups")
+  reviews           Review[]         @relation("ReviewAuthor")
+  wallet            Wallet?
+  otpCodes          OtpCode[]
+  refreshTokens     RefreshToken[]
+  notifications     Notification[]
+  chainOfCustody    ChainOfCustody[] @relation("CustodyHandler")
+
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  type      String   // "EMAIL_VERIFY", "PHONE_VERIFY", "PASSWORD_RESET", "PICKUP_CONFIRM"
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String   @unique
+  deviceInfo  String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================================
+// RECYCLER & VERIFICATION
+// ============================================================
+
+model Recycler {
+  id              String             @id @default(cuid())
+  userId          String             @unique
+  businessName    String
+  licenseNumber   String?
+  registrationNo  String?
+  tier            RecyclerTier       @default(BASIC)
+  description     String?
+  facilityAddress String?
+  facilityLat     Float?
+  facilityLng     Float?
+  capacity        String?            // e.g., "500kg/day"
+  capabilities    String[]           // e.g., ["COMPUTERS", "BATTERIES"]
+  rating          Float              @default(0)
+  totalReviews    Int                @default(0)
+  isVerified      Boolean            @default(false)
+  isActive        Boolean            @default(true)
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verification    Verification?
+  documents       RecyclerDocument[]
+  pickupRequests  PickupRequest[]
+  reviews         Review[]
+
+  @@map("recyclers")
+}
+
+model Verification {
+  id              String             @id @default(cuid())
+  recyclerId      String             @unique
+  status          VerificationStatus @default(PENDING)
+  submittedAt     DateTime           @default(now())
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reviewerNotes   String?
+  expiresAt       DateTime?
+  rejectionReason String?
+
+  recycler        Recycler           @relation(fields: [recyclerId], references: [id], onDelete: Cascade)
+
+  @@map("verifications")
+}
+
+model RecyclerDocument {
+  id          String   @id @default(cuid())
+  recyclerId  String
+  type        String   // "BUSINESS_LICENSE", "ENV_CLEARANCE", "POLLUTION_CERT", "EWASTE_AUTH"
+  fileName    String
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  isVerified  Boolean  @default(false)
+  uploadedAt  DateTime @default(now())
+
+  recycler    Recycler @relation(fields: [recyclerId], references: [id], onDelete: Cascade)
+
+  @@map("recycler_documents")
+}
+
+// ============================================================
+// WASTE LISTING
+// ============================================================
+
+model WasteListing {
+  id              String        @id @default(cuid())
+  userId          String
+  category        WasteCategory
+  subcategory     String?
+  title           String
+  description     String?
+  quantity        Int           @default(1)
+  estimatedWeight Float?        // in kg
+  condition       String?       // "working", "damaged", "non-functional"
+  images          String[]
+  isHazardous     Boolean       @default(false)
+  hazardLevel     HazardLevel   @default(NONE)
+  hazardDetails   String?
+  estimatedValue  Float?
+  status          ListingStatus @default(DRAFT)
+
+  // Location (inherits from user if not set)
+  addressLine1    String?
+  city            String?
+  state           String?
+  postalCode      String?
+  latitude        Float?
+  longitude       Float?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wasteItems      WasteItem[]
+
+  @@index([userId, status])
+  @@index([category])
+  @@map("waste_listings")
+}
+
+// ============================================================
+// PICKUP & TRACKING
+// ============================================================
+
+model PickupRequest {
+  id              String       @id @default(cuid())
+  generatorId     String
+  recyclerId      String?
+  agentId         String?
+  status          PickupStatus @default(REQUESTED)
+  scheduledAt     DateTime
+  completedAt     DateTime?
+  isInstant       Boolean      @default(false)
+  isRecurring     Boolean      @default(false)
+  recurringRule   String?      // cron expression for recurring
+
+  // Address
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  state           String
+  postalCode      String
+  latitude        Float?
+  longitude       Float?
+  instructions    String?
+
+  // Verification
+  otpCode         String?
+  otpVerified     Boolean      @default(false)
+
+  // Weight & Value
+  estimatedWeight Float?
+  actualWeight    Float?
+  estimatedValue  Float?
+  actualValue     Float?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  generator       User         @relation("GeneratorPickups", fields: [generatorId], references: [id])
+  recycler        Recycler?    @relation(fields: [recyclerId], references: [id])
+  agent           User?        @relation("AgentPickups", fields: [agentId], references: [id])
+  tracking        Tracking?
+  wasteItems      WasteItem[]
+  payments        Payment[]
+
+  @@index([generatorId, status])
+  @@index([recyclerId, status])
+  @@index([agentId, status])
+  @@index([status, scheduledAt])
+  @@map("pickup_requests")
+}
+
+model Tracking {
+  id          String   @id @default(cuid())
+  pickupId    String   @unique
+  agentLat    Float?
+  agentLng    Float?
+  eta         DateTime?
+  status      String?
+  updatedAt   DateTime @updatedAt
+
+  pickup      PickupRequest @relation(fields: [pickupId], references: [id], onDelete: Cascade)
+
+  @@map("tracking")
+}
+
+model WasteItem {
+  id               String           @id @default(cuid())
+  pickupId         String
+  listingId        String?
+  qrCode           String?          @unique
+  category         WasteCategory
+  description      String?
+  actualWeight     Float?
+  processingStatus ProcessingStatus @default(RECEIVED)
+  processedAt      DateTime?
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  pickup           PickupRequest    @relation(fields: [pickupId], references: [id], onDelete: Cascade)
+  listing          WasteListing?    @relation(fields: [listingId], references: [id])
+  chainOfCustody   ChainOfCustody[]
+
+  @@index([pickupId])
+  @@map("waste_items")
+}
+
+model ChainOfCustody {
+  id          String   @id @default(cuid())
+  itemId      String
+  handlerId   String
+  eventType   String   // "PICKUP", "TRANSIT", "RECEIVED", "SORTED", "PROCESSED", "DISPOSED"
+  locationLat Float?
+  locationLng Float?
+  locationName String?
+  notes       String?
+  photos      String[]
+  timestamp   DateTime @default(now())
+
+  // Relations
+  item        WasteItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  handler     User      @relation("CustodyHandler", fields: [handlerId], references: [id])
+
+  @@index([itemId])
+  @@map("chain_of_custody")
+}
+
+// ============================================================
+// PAYMENTS & WALLET
+// ============================================================
+
+model Payment {
+  id          String        @id @default(cuid())
+  pickupId    String
+  amount      Float
+  currency    String        @default("INR")
+  status      PaymentStatus @default(PENDING)
+  gatewayRef  String?
+  method      String?       // "UPI", "CARD", "NET_BANKING", "WALLET"
+  paidAt      DateTime?
+  createdAt   DateTime      @default(now())
+
+  pickup      PickupRequest @relation(fields: [pickupId], references: [id])
+
+  @@map("payments")
+}
+
+model Wallet {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  balance      Float    @default(0)
+  rewardPoints Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+// ============================================================
+// REVIEWS & RATINGS
+// ============================================================
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  recyclerId  String
+  rating      Int      // 1-5
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation("ReviewAuthor", fields: [userId], references: [id])
+  recycler    Recycler @relation(fields: [recyclerId], references: [id])
+
+  @@unique([userId, recyclerId])
+  @@map("reviews")
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   // "PICKUP_UPDATE", "VERIFICATION", "REWARD", "SYSTEM"
+  isRead    Boolean  @default(false)
+  data      String?  // JSON string for additional data
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
