@@ -77,7 +77,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+    <div className="auth-card rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -86,7 +86,7 @@ export default function SignupPage() {
       </div>
 
       {/* Role Selection */}
-      <div className="mb-6">
+      <div className="auth-role-selection mb-6">
         <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-500">
           Select Your Account Type
         </label>
@@ -129,7 +129,7 @@ export default function SignupPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="auth-form space-y-4">
         <Input
           label="Full Name or Business Name"
           type="text"

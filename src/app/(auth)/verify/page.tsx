@@ -101,8 +101,8 @@ function VerifyOtpContent() {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-600 mb-4">
+    <div className="auth-card rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center">
+      <div className="auth-verify-icon mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-600 mb-4">
         <FiShield className="h-6 w-6" />
       </div>
 
@@ -114,8 +114,8 @@ function VerifyOtpContent() {
         {email || "your registered email"}
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        <div className="flex justify-center gap-2 sm:gap-3">
+      <form onSubmit={handleSubmit} className="auth-form mt-8 space-y-6">
+        <div className="auth-code-inputs flex justify-center gap-2 sm:gap-3">
           {digits.map((digit, idx) => (
             <input
               key={idx}

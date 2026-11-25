@@ -52,7 +52,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+    <div className="auth-card rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Sign in to your account</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -60,7 +60,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="auth-form space-y-4">
         <Input
           label="Email Address"
           type="email"

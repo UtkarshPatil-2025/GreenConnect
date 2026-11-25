@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+    <div className="auth-card rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
       <Link
         href="/login"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 mb-6"
@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="auth-form space-y-4">
             <Input
               label="Email Address"
               type="email"
@@ -67,8 +67,8 @@ export default function ForgotPasswordPage() {
           </form>
         </>
       ) : (
-        <div className="text-center py-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-600 mb-4">
+        <div className="auth-success-state text-center py-4">
+          <div className="auth-success-icon mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-600 mb-4">
             <FiMail className="h-6 w-6" />
           </div>
           <h2 className="text-xl font-bold text-gray-900">Check your inbox</h2>

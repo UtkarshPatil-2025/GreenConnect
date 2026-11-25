@@ -8,14 +8,14 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="auth-shell flex min-h-screen">
       {/* Left Brand Panel (hidden on small mobile) */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 p-12 text-white lg:flex">
+      <div className="auth-brand-panel relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 p-12 text-white lg:flex">
         {/* Decorative background glow */}
-        <div className="absolute -left-20 -top-20 h-96 w-96 rounded-full bg-primary-500/20 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-accent-400/20 blur-3xl" />
+        <div className="auth-orb absolute -left-20 -top-20 h-96 w-96 rounded-full bg-primary-500/20 blur-3xl" />
+        <div className="auth-orb auth-orb-slow absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-accent-400/20 blur-3xl" />
 
-        <div className="relative z-10">
+        <div className="auth-brand-content relative z-10">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary-700 shadow-md">
               <FiRefreshCw className="h-5 w-5" />
@@ -35,8 +35,8 @@ export default function AuthLayout({
           </div>
         </div>
 
-        <div className="relative z-10 space-y-4">
-          <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3.5 backdrop-blur-sm">
+        <div className="auth-feature-list relative z-10 space-y-4">
+          <div className="auth-feature-card flex items-center gap-3 rounded-xl bg-white/10 p-3.5 backdrop-blur-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-500/30 text-primary-200">
               <FiShield className="h-5 w-5" />
             </div>
@@ -46,7 +46,7 @@ export default function AuthLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3.5 backdrop-blur-sm">
+          <div className="auth-feature-card flex items-center gap-3 rounded-xl bg-white/10 p-3.5 backdrop-blur-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-500/30 text-primary-200">
               <FiTruck className="h-5 w-5" />
             </div>
@@ -56,7 +56,7 @@ export default function AuthLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3.5 backdrop-blur-sm">
+          <div className="auth-feature-card flex items-center gap-3 rounded-xl bg-white/10 p-3.5 backdrop-blur-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-500/30 text-primary-200">
               <FiAward className="h-5 w-5" />
             </div>
@@ -69,10 +69,10 @@ export default function AuthLayout({
       </div>
 
       {/* Right Form Content */}
-      <div className="flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-16 xl:px-24 bg-gray-50/50">
-        <div className="mx-auto w-full max-w-md">
+      <div className="auth-form-panel flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-16 xl:px-24 bg-gray-50/50">
+        <div className="auth-form-container mx-auto w-full max-w-md">
           {/* Mobile brand header */}
-          <div className="mb-8 flex items-center justify-between lg:hidden">
+          <div className="auth-mobile-brand mb-8 flex items-center justify-between lg:hidden">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white">
                 <FiRefreshCw className="h-4 w-4" />
