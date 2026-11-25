@@ -1,4 +1,4 @@
-# 🌿 GreenCircuit — Intelligent E-Waste Management Platform
+# GreenConnect — 🌿 GreenCircuit — Intelligent E-Waste Management Platform
 
 > **A regulatory-compliant, real-time e-waste management platform connecting waste generators (households, IT enterprises, institutions) with certified recyclers.**
 
