@@ -14,6 +14,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Authenticate user
     const authResult = await authenticate(request);
     if (authResult instanceof Response) return authResult;
+    const { user } = authResult;
 
     // Fetch full pickup details
     const pickup = await prisma.pickupRequest.findUnique({
@@ -68,7 +69,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return apiError("Pickup not found", 404);
     }
 
-    return apiResponse(pickup, "Pickup details retrieved successfully");
+    if (user.role === "GENERATOR" && pickup.generatorId !== user.userId) {
+      return apiError("You can only view your own pickups", 403);
+    }
+
+    if (user.role === "RECYCLER") {
+      const recycler = await prisma.recycler.findUnique({
+        where: { userId: user.userId },
+        select: { id: true },
+      });
+      if (!recycler || pickup.recyclerId !== recycler.id) {
+        return apiError("You can only view pickups assigned to your facility", 403);
+      }
+    } else if (
+      user.role === "PICKUP_AGENT" &&
+      pickup.agentId !== user.userId
+    ) {
+      return apiError("You can only view pickups assigned to you", 403);
+    } else if (!["GENERATOR", "RECYCLER", "PICKUP_AGENT", "ADMIN"].includes(user.role)) {
+      return apiError("Insufficient permissions", 403);
+    }
+
+    const visiblePickup =
+      user.role === "GENERATOR" ? pickup : { ...pickup, otpCode: null };
+    return apiResponse(visiblePickup, "Pickup details retrieved successfully");
   } catch (error) {
     console.error("Get pickup error:", error);
     return apiError("Internal server error", 500);

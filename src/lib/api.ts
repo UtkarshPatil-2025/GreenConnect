@@ -3,7 +3,12 @@
  * Handles authentication headers and error responses
  */
 
-import type { CreatePickupInput } from "@/lib/validations";
+import type {
+  CreatePickupInput,
+  ProcessingUpdateInput,
+  RecyclerProfileInput,
+  UpdateUserProfileInput,
+} from "@/lib/validations";
 
 interface APIResponse<T = unknown> {
   success: boolean;
@@ -153,8 +158,72 @@ export async function getMeAPI() {
     name: string;
     email: string;
     role: string;
-    phone?: string;
+    phone?: string | null;
+    addressLine1?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    createdAt?: string;
+    recyclerProfile?: {
+      id: string;
+      businessName: string;
+      description: string | null;
+      facilityAddress: string | null;
+      capacity: string | null;
+      capabilities: string[];
+      rating: number;
+      totalReviews: number;
+    } | null;
+    wallet?: { rewardPoints: number; balance: number } | null;
   }>("/api/auth/me");
+}
+
+export async function updateMeAPI(data: UpdateUserProfileInput) {
+  return fetchAPI<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    phone: string | null;
+  }>("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateMyRecyclerProfileAPI(
+  data: Partial<RecyclerProfileInput>,
+) {
+  return fetchAPI("/api/recyclers/me", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getRecyclerReviewsAPI(recyclerId: string) {
+  return fetchAPI<{
+    reviews: Array<{
+      id: string;
+      rating: number;
+      comment: string | null;
+      createdAt: string;
+      user: { id: string; name: string; avatar: string | null };
+    }>;
+    rating: number;
+    totalReviews: number;
+    pagination: { page: number; limit: number; total: number };
+  }>(`/api/recyclers/${encodeURIComponent(recyclerId)}/reviews`);
+}
+
+export async function getLeaderboardAPI() {
+  return fetchAPI<
+    Array<{
+      rank: number;
+      name: string;
+      stars: number;
+      completedPickups: number;
+    }>
+  >("/api/leaderboard");
 }
 
 // ---- Dashboard API ----
@@ -163,6 +232,7 @@ export async function getDashboardStatsAPI() {
   return fetchAPI<{
     totalListings: number;
     activePickups: number;
+    completedPickups: number;
     weightRecycled: number;
     co2Saved: number;
     rewardPoints: number;
@@ -244,54 +314,103 @@ export async function createListingAPI(data: {
 
 // ---- Pickups API ----
 
+interface PickupProcessingUpdate {
+  id: string;
+  eventType: string;
+  notes: string | null;
+  timestamp: string;
+  locationName: string | null;
+}
+
+interface PickupWasteItem {
+  id: string;
+  category: string;
+  description: string | null;
+  actualWeight: number | null;
+  processingStatus: string;
+  listing: {
+    title: string;
+    estimatedWeight: number | null;
+    quantity: number;
+    condition: string | null;
+  } | null;
+  chainOfCustody: PickupProcessingUpdate[];
+}
+
+interface PickupRecord {
+  id: string;
+  scheduledAt: string;
+  status: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  estimatedWeight: number | null;
+  instructions: string | null;
+  otpCode: string | null;
+  createdAt: string;
+  updatedAt: string;
+  recycler: {
+    id: string;
+    businessName: string;
+    user: { phone: string | null };
+  } | null;
+  generator?: { id: string; name: string };
+  tracking?: { status: string | null; updatedAt: string };
+  wasteItems: PickupWasteItem[];
+}
+
+function normalizePickup(pickup: PickupRecord) {
+  return {
+    id: pickup.id,
+    scheduledDate: pickup.scheduledAt,
+    status: pickup.status,
+    address: pickup.addressLine1,
+    city: pickup.city,
+    state: pickup.state,
+    pincode: pickup.postalCode,
+    itemCount: pickup.wasteItems.length,
+    estimatedWeight: pickup.estimatedWeight ?? 0,
+    specialInstructions: pickup.instructions ?? undefined,
+    otp: pickup.otpCode ?? undefined,
+    recycler: pickup.recycler
+      ? {
+          id: pickup.recycler.id,
+          name: pickup.recycler.businessName,
+          phone: pickup.recycler.user.phone ?? undefined,
+        }
+      : undefined,
+    generatorName: pickup.generator?.name,
+    items: pickup.wasteItems.map((item) => ({
+      id: item.id,
+      title: item.listing?.title || item.description || item.category,
+      category: item.category,
+      quantity: item.listing?.quantity ?? 1,
+      estimatedWeight: item.actualWeight ?? item.listing?.estimatedWeight ?? 0,
+      condition: item.listing?.condition ?? "not specified",
+      processingStatus: item.processingStatus,
+      processingUpdates: item.chainOfCustody,
+    })),
+    createdAt: pickup.createdAt,
+    statusHistory: pickup.tracking?.status
+      ? [{ status: pickup.tracking.status, timestamp: pickup.tracking.updatedAt }]
+      : [],
+  };
+}
+
 export async function getPickupsAPI(status?: string) {
   const url = status ? `/api/pickups?status=${status}` : "/api/pickups";
-  return fetchAPI<
-    Array<{
-      id: string;
-      scheduledDate: string;
-      status: string;
-      address: string;
-      itemCount: number;
-      estimatedWeight: number;
-      specialInstructions?: string;
-      otp?: string;
-      recycler?: { id: string; name: string; phone?: string };
-      items?: Array<{ id: string; title: string; category: string; weight: number }>;
-      createdAt: string;
-    }>
-  >(url);
+  const response = await fetchAPI<{
+    pickups: PickupRecord[];
+    pagination: { page: number; limit: number; total: number; totalPages: number };
+  }>(url);
+  return { ...response, data: response.data.pickups.map(normalizePickup) };
 }
 
 export async function getPickupByIdAPI(id: string) {
-  return fetchAPI<{
-    id: string;
-    scheduledDate: string;
-    status: string;
-    address: string;
-    city: string;
-    state: string;
-    pincode: string;
-    itemCount: number;
-    estimatedWeight: number;
-    specialInstructions?: string;
-    otp?: string;
-    recycler?: { id: string; name: string; phone?: string; email?: string };
-    items: Array<{
-      id: string;
-      title: string;
-      category: string;
-      quantity: number;
-      estimatedWeight: number;
-      condition: string;
-    }>;
-    statusHistory: Array<{
-      status: string;
-      timestamp: string;
-      note?: string;
-    }>;
-    createdAt: string;
-  }>(`/api/pickups/${id}`);
+  const response = await fetchAPI<PickupRecord>(`/api/pickups/${id}`);
+  return { ...response, data: normalizePickup(response.data) };
 }
 
 export async function createPickupAPI(data: CreatePickupInput) {
@@ -302,9 +421,20 @@ export async function createPickupAPI(data: CreatePickupInput) {
 }
 
 export async function updatePickupStatusAPI(id: string, status: string) {
-  return fetchAPI(`/api/pickups/${id}`, {
+  return fetchAPI(`/api/pickups/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
+  });
+}
+
+export async function updateWasteItemProcessingAPI(
+  pickupId: string,
+  itemId: string,
+  data: ProcessingUpdateInput,
+) {
+  return fetchAPI(`/api/pickups/${pickupId}/items/${itemId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
 

@@ -38,6 +38,24 @@ export const verifyOtpSchema = z.object({
   type: z.enum(["EMAIL_VERIFY", "PHONE_VERIFY", "PASSWORD_RESET"]),
 });
 
+export const updateUserProfileSchema = z
+  .object({
+    name: z.string().trim().min(2).max(100).optional(),
+    phone: z
+      .string()
+      .regex(/^\+?[1-9]\d{9,14}$/, "Invalid phone number")
+      .nullable()
+      .optional(),
+    addressLine1: z.string().trim().max(200).nullable().optional(),
+    city: z.string().trim().max(100).nullable().optional(),
+    state: z.string().trim().max(100).nullable().optional(),
+    postalCode: z.string().trim().max(20).nullable().optional(),
+  })
+  .strict()
+  .refine((data) => Object.values(data).some((value) => value !== undefined), {
+    message: "At least one profile field must be provided",
+  });
+
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
@@ -149,6 +167,17 @@ export const reviewSchema = z.object({
   comment: z.string().max(1000).optional(),
 });
 
+export const processingUpdateSchema = z.object({
+  status: z.enum([
+    "SORTED",
+    "DISMANTLED",
+    "MATERIAL_RECOVERY",
+    "DISPOSED",
+    "COMPLETED",
+  ]),
+  notes: z.string().trim().min(3).max(1000),
+});
+
 // ============================================================
 // Type Exports
 // ============================================================
@@ -160,3 +189,5 @@ export type CreateListingInput = z.infer<typeof createListingSchema>;
 export type CreatePickupInput = z.infer<typeof createPickupSchema>;
 export type RecyclerProfileInput = z.infer<typeof recyclerProfileSchema>;
 export type ReviewInput = z.infer<typeof reviewSchema>;
+export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
+export type ProcessingUpdateInput = z.infer<typeof processingUpdateSchema>;

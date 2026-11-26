@@ -28,6 +28,7 @@ const generatorLinks: SidebarLink[] = [
   { href: "/pickups/new", label: "Schedule Pickup", icon: <FiPlus className="h-5 w-5" /> },
   { href: "/pickups", label: "My Pickups", icon: <FiTruck className="h-5 w-5" /> },
   { href: "/rewards", label: "Rewards", icon: <FiAward className="h-5 w-5" /> },
+  { href: "/leaderboard", label: "Community board", icon: <FiStar className="h-5 w-5" /> },
   { href: "/settings", label: "Settings", icon: <FiSettings className="h-5 w-5" /> },
 ];
 
@@ -36,6 +37,7 @@ const recyclerLinks: SidebarLink[] = [
   { href: "/recycler/pickups", label: "Incoming Pickups", icon: <FiTruck className="h-5 w-5" /> },
   { href: "/recycler/reviews", label: "Reviews", icon: <FiStar className="h-5 w-5" /> },
   { href: "/recycler/settings", label: "Settings", icon: <FiSettings className="h-5 w-5" /> },
+  { href: "/leaderboard", label: "Community board", icon: <FiAward className="h-5 w-5" /> },
 ];
 
 interface SidebarProps {

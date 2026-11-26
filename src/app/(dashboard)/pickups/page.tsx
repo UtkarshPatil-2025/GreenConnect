@@ -66,7 +66,7 @@ export default function PickupsPage() {
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
-        {["ALL", "REQUESTED", "EN_ROUTE", "ARRIVED", "COMPLETED"].map((tab) => (
+        {["ALL", "REQUESTED", "CONFIRMED", "AGENT_ASSIGNED", "EN_ROUTE", "ARRIVED", "PICKED_UP", "IN_TRANSIT", "AT_FACILITY", "PROCESSING", "COMPLETED", "CANCELLED"].map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}

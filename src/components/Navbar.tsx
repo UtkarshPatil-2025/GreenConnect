@@ -30,14 +30,22 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
+    const syncUser = () => {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored));
+        } catch {
+          setUser(null);
+        }
+      } else {
         setUser(null);
       }
-    }
+    };
+
+    syncUser();
+    window.addEventListener("user-profile-updated", syncUser);
+    return () => window.removeEventListener("user-profile-updated", syncUser);
   }, []);
 
   useEffect(() => {
@@ -70,11 +78,15 @@ export default function Navbar() {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/listings", label: "My Listings" },
     { href: "/pickups", label: "Pickups" },
+    { href: "/leaderboard", label: "Leaderboard" },
   ];
 
   const recyclerLinks = [
     { href: "/recycler/dashboard", label: "Dashboard" },
     { href: "/recycler/pickups", label: "Incoming Requests" },
+    { href: "/recycler/reviews", label: "Reviews" },
+    { href: "/recycler/settings", label: "Settings" },
+    { href: "/leaderboard", label: "Leaderboard" },
   ];
 
   const links = user
@@ -84,6 +96,7 @@ export default function Navbar() {
     : [
         { href: "/", label: "Home" },
         { href: "/recyclers", label: "Find Recyclers" },
+        { href: "/leaderboard", label: "Leaderboard" },
       ];
 
   return (

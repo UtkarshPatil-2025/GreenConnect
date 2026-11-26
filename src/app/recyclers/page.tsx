@@ -119,7 +119,7 @@ export default function RecyclersDirectoryPage() {
       </section>
 
       {/* Recyclers Grid */}
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="animate-fade-up mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />

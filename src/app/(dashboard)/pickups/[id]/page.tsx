@@ -38,6 +38,14 @@ interface PickupDetail {
     quantity: number;
     estimatedWeight: number;
     condition: string;
+    processingStatus: string;
+    processingUpdates: Array<{
+      id: string;
+      eventType: string;
+      notes: string | null;
+      timestamp: string;
+      locationName: string | null;
+    }>;
   }>;
   statusHistory?: Array<{
     status: string;
@@ -48,12 +56,15 @@ interface PickupDetail {
 
 const TIMELINE_STEPS = [
   { key: "REQUESTED", label: "Requested" },
+  { key: "CONFIRMED", label: "Confirmed" },
   { key: "AGENT_ASSIGNED", label: "Agent Assigned" },
   { key: "EN_ROUTE", label: "En Route" },
   { key: "ARRIVED", label: "Arrived" },
   { key: "PICKED_UP", label: "Picked Up" },
+  { key: "IN_TRANSIT", label: "In Transit" },
+  { key: "AT_FACILITY", label: "At Facility" },
   { key: "PROCESSING", label: "Recycling Facility" },
-  { key: "COMPLETED", label: "Certificate Issued" },
+  { key: "COMPLETED", label: "Completed" },
 ];
 
 export default function PickupDetailPage() {
@@ -158,7 +169,7 @@ export default function PickupDetailPage() {
             }}
           />
 
-          <div className="grid grid-cols-2 sm:grid-cols-7 gap-4 relative z-10">
+          <div className="grid grid-cols-2 gap-4 relative z-10 sm:grid-cols-5 lg:grid-cols-10">
             {TIMELINE_STEPS.map((step, idx) => {
               const isDone = idx <= activeStepIdx;
               const isCurrent = idx === activeStepIdx;
@@ -291,19 +302,41 @@ export default function PickupDetailPage() {
         {pickup.items && pickup.items.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {pickup.items.map((it) => (
-              <div key={it.id} className="flex items-center justify-between py-3 text-xs">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                    <FiCpu className="h-4 w-4" />
+              <div key={it.id} className="py-4 text-xs">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+                      <FiCpu className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900">{it.title}</span>
+                      <span className="ml-2 text-gray-500 capitalize">({it.condition})</span>
+                      <p className="mt-1 text-[11px] font-medium text-primary-700">
+                        Processing: {it.processingStatus.replace(/_/g, " ").toLowerCase()}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-semibold text-gray-900">{it.title}</span>
-                    <span className="ml-2 text-gray-500 capitalize">({it.condition})</span>
+                  <div className="pl-11 text-left font-medium text-gray-700 sm:pl-0 sm:text-right">
+                    {it.quantity} unit(s) • ~{it.estimatedWeight} kg
                   </div>
                 </div>
-                <div className="text-right font-medium text-gray-700">
-                  {it.quantity} unit(s) • ~{it.estimatedWeight} kg
-                </div>
+                <ol className="ml-11 mt-3 space-y-2 border-l-2 border-emerald-100 pl-3 sm:ml-11">
+                  {it.processingUpdates.length ? it.processingUpdates.map((update) => (
+                    <li key={update.id} className="relative text-gray-600">
+                      <span className="absolute -left-[1.05rem] top-1 h-2 w-2 rounded-full bg-emerald-500" />
+                      <p className="font-semibold text-gray-800">
+                        {update.eventType.replace(/_/g, " ").toLowerCase()}
+                        <time className="ml-2 font-normal text-gray-400">
+                          {new Date(update.timestamp).toLocaleString()}
+                        </time>
+                      </p>
+                      {update.notes && <p className="mt-0.5 leading-5">{update.notes}</p>}
+                      {update.locationName && <p className="mt-0.5 text-[11px] text-gray-400">{update.locationName}</p>}
+                    </li>
+                  )) : (
+                    <li className="text-gray-400">Recycler updates will appear here as your item is processed.</li>
+                  )}
+                </ol>
               </div>
             ))}
           </div>

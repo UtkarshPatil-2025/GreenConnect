@@ -153,9 +153,8 @@ export async function GET(request: NextRequest) {
         const recycler = await prisma.recycler.findUnique({
           where: { userId: user.userId },
         });
-        if (recycler) {
-          where.recyclerId = recycler.id;
-        }
+        if (!recycler) return apiError("Recycler profile not found", 404);
+        where.recyclerId = recycler.id;
         break;
       }
       case "PICKUP_AGENT":
@@ -183,6 +182,13 @@ export async function GET(request: NextRequest) {
             },
           },
           tracking: true,
+          recycler: {
+            select: {
+              id: true,
+              businessName: true,
+              user: { select: { phone: true } },
+            },
+          },
           wasteItems: {
             include: {
               listing: {
@@ -191,7 +197,12 @@ export async function GET(request: NextRequest) {
                   title: true,
                   category: true,
                   estimatedWeight: true,
+                  quantity: true,
+                  condition: true,
                 },
+              },
+              chainOfCustody: {
+                orderBy: { timestamp: "desc" },
               },
             },
           },
@@ -205,7 +216,10 @@ export async function GET(request: NextRequest) {
 
     return apiResponse(
       {
-        pickups,
+        pickups: pickups.map((pickup) => ({
+          ...pickup,
+          otpCode: user.role === "GENERATOR" ? pickup.otpCode : null,
+        })),
         pagination: {
           page,
           limit,

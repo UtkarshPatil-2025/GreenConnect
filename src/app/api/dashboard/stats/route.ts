@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         const [
           totalListings,
           activePickups,
+          completedPickups,
           userData,
           wallet,
           recentPickups,
@@ -32,6 +33,9 @@ export async function GET(request: NextRequest) {
                 notIn: ["COMPLETED", "CANCELLED"],
               },
             },
+          }),
+          prisma.pickupRequest.count({
+            where: { generatorId: user.userId, status: "COMPLETED" },
           }),
           prisma.user.findUnique({
             where: { id: user.userId },
@@ -60,6 +64,7 @@ export async function GET(request: NextRequest) {
           {
             totalListings,
             activePickups,
+            completedPickups,
             weightRecycled: userData?.totalWeightKg || 0,
             co2Saved: userData?.co2SavedKg || 0,
             rewardPoints: wallet?.rewardPoints || 0,

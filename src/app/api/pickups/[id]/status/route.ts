@@ -55,6 +55,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return apiError("Pickup not found", 404);
     }
 
+    if (user.role === "RECYCLER") {
+      const recycler = await prisma.recycler.findUnique({
+        where: { userId: user.userId },
+        select: { id: true },
+      });
+      if (!recycler || pickup.recyclerId !== recycler.id) {
+        return apiError("You can only update pickups assigned to your facility", 403);
+      }
+    }
+
+    if (
+      user.role === "PICKUP_AGENT" &&
+      pickup.agentId &&
+      pickup.agentId !== user.userId
+    ) {
+      return apiError("This pickup is assigned to another agent", 403);
+    }
+
     // Validate status transition
     const allowedTransitions = VALID_TRANSITIONS[pickup.status];
     if (!allowedTransitions || !allowedTransitions.includes(status)) {
@@ -62,6 +80,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         `Invalid status transition from ${pickup.status} to ${status}`,
         400,
       );
+    }
+
+    if (
+      status === "COMPLETED" &&
+      pickup.wasteItems.some((item) => item.processingStatus !== "COMPLETED")
+    ) {
+      return apiError("Complete the recycling updates for every item before closing this pickup", 409);
     }
 
     // Update pickup and tracking in a transaction
@@ -83,11 +108,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         pickupUpdateData.agentId = user.userId;
       }
 
-      // Update pickup
-      const updated = await tx.pickupRequest.update({
-        where: { id },
+      // Only one concurrent request may advance a pickup from this state.
+      const transitioned = await tx.pickupRequest.updateMany({
+        where: { id, status: pickup.status },
         data: pickupUpdateData,
       });
+      if (transitioned.count === 0) return false;
 
       // Update tracking record
       if (pickup.tracking) {
@@ -139,8 +165,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
       }
 
-      return updated;
+      return true;
     });
+
+    if (!updatedPickup) {
+      return apiError("Pickup status changed in another request. Reload and try again.", 409);
+    }
 
     // Fetch complete updated pickup
     const fullPickup = await prisma.pickupRequest.findUnique({
@@ -158,7 +188,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    return apiResponse(fullPickup, `Pickup status updated to ${status}`);
+    if (!fullPickup) {
+      return apiError("Pickup not found after update", 404);
+    }
+
+    const { otpCode: _, ...visiblePickup } = fullPickup;
+    return apiResponse(visiblePickup, `Pickup status updated to ${status}`);
   } catch (error) {
     console.error("Update pickup status error:", error);
     return apiError("Internal server error", 500);
