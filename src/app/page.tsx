@@ -111,7 +111,7 @@ export default function Home() {
               </div>
               <div className="float-card trust-card">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-800"><FiShield /></span>
-                <span><span className="block text-xs font-bold text-slate-900">Verified partners</span><span className="text-[10px] text-slate-500">Find a recycler near you</span></span>
+                <span><span className="block text-xs font-bold text-slate-900">Recycler partners</span><span className="text-[10px] text-slate-500">Find a recycler near you</span></span>
                 <FiArrowUpRight className="ml-auto text-emerald-700" />
               </div>
               <div className="scene-caption absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/80 bg-white/70 px-4 py-2 text-[10px] font-semibold tracking-wide text-emerald-950 shadow-sm backdrop-blur">
@@ -176,7 +176,7 @@ export default function Home() {
               {[
                 { icon: FiMapPin, title: "Pickup journey", text: "See pickup status and follow progress through the collection lifecycle.", tint: "bg-sky-100 text-sky-800" },
                 { icon: FiShield, title: "Secure handover", text: "Use a one-time pickup code to help confirm the right person collects your items.", tint: "bg-emerald-100 text-emerald-800" },
-                { icon: FiCheckCircle, title: "Recycler directory", text: "Explore recycler profiles, capabilities, and verification information.", tint: "bg-violet-100 text-violet-800" },
+                { icon: FiCheckCircle, title: "Recycler directory", text: "Explore recycler profiles, processing capabilities, and pickup availability.", tint: "bg-violet-100 text-violet-800" },
                 { icon: FiBarChart2, title: "Personal impact", text: "See your listed items and pickup activity together in your dashboard.", tint: "bg-amber-100 text-amber-800" },
                 { icon: FiAward, title: "Eco-credit tracking", text: "Keep an eye on reward points associated with your recycling activity.", tint: "bg-rose-100 text-rose-800" },
                 { icon: FiUsers, title: "Generator & recycler accounts", text: "Separate experiences for households and facilities, with role-based workspaces.", tint: "bg-cyan-100 text-cyan-800" },

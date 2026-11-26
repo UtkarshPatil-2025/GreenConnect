@@ -49,15 +49,16 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // If role is RECYCLER, create recycler profile and verification record
+      // Recycler profiles are available immediately after signup.
       if (role === "RECYCLER") {
         await tx.recycler.create({
           data: {
             userId: user.id,
             businessName: name,
+            isVerified: true,
             verification: {
               create: {
-                status: "PENDING",
+                status: "APPROVED",
               },
             },
           },

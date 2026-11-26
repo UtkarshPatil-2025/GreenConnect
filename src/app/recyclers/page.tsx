@@ -12,8 +12,6 @@ import {
   FiSearch,
   FiMapPin,
   FiStar,
-  FiShield,
-  FiCheckCircle,
   FiFilter,
   FiTruck,
 } from "react-icons/fi";
@@ -28,7 +26,6 @@ interface RecyclerEntry {
   capabilities: string[];
   city: string;
   state: string;
-  isVerified: boolean;
   description?: string;
 }
 
@@ -68,14 +65,14 @@ export default function RecyclersDirectoryPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-800">
-              <FiShield className="h-3.5 w-3.5" />
-              <span>Verified E-Waste Recycler Network</span>
+              <FiTruck className="h-3.5 w-3.5" />
+              <span>E-Waste Recycler Network</span>
             </div>
             <h1 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Find Certified Recyclers Near You
+              Find Recyclers Near You
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              Every facility listed is vetted for Environmental Protection Agency (EPA) and State Pollution Board compliance.
+              Browse recycler profiles and pickup availability. Contact facilities directly about permits and compliance.
             </p>
           </div>
 
@@ -136,9 +133,7 @@ export default function RecyclersDirectoryPage() {
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-700 font-bold text-lg">
                       {r.name?.charAt(0) || "R"}
                     </div>
-                    <Badge variant={r.isVerified ? "success" : "default"}>
-                      {r.tier || "VERIFIED"}
-                    </Badge>
+                    <Badge variant="success">Active</Badge>
                   </div>
 
                   <h3 className="mt-4 font-bold text-gray-900 text-base">{r.name}</h3>
@@ -148,12 +143,12 @@ export default function RecyclersDirectoryPage() {
                   </div>
 
                   <p className="mt-3 text-xs text-gray-600 line-clamp-2">
-                    {r.description || "Authorized e-waste dismantler and circular material recovery facility."}
+                    {r.description || "E-waste dismantling and circular material recovery facility."}
                   </p>
 
                   <div className="mt-4">
                     <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">
-                      Certified Streams
+                      Processing Capabilities
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {r.capabilities?.slice(0, 3).map((cap) => (

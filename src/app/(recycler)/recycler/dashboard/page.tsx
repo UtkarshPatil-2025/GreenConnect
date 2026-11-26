@@ -4,14 +4,10 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { getRecyclerDashboardAPI } from "@/lib/api";
 import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
 import StatusBadge from "@/components/ui/StatusBadge";
 import {
   FiTruck,
-  FiShield,
   FiCheckCircle,
-  FiAlertCircle,
   FiTrendingUp,
   FiStar,
   FiArrowRight,
@@ -19,7 +15,6 @@ import {
 } from "react-icons/fi";
 
 interface RecyclerStats {
-  verificationStatus: string;
   pendingPickups: number;
   inProgressPickups: number;
   completedPickups: number;
@@ -37,7 +32,6 @@ interface RecyclerStats {
 
 export default function RecyclerDashboardPage() {
   const [stats, setStats] = useState<RecyclerStats>({
-    verificationStatus: "PENDING",
     pendingPickups: 0,
     inProgressPickups: 0,
     completedPickups: 0,
@@ -63,56 +57,22 @@ export default function RecyclerDashboardPage() {
     load();
   }, []);
 
-  const isVerified = stats.verificationStatus === "APPROVED";
-
   return (
     <div className="space-y-8">
-      {/* Verification Notice Banner if Pending */}
-      {!isVerified && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
-              <FiAlertCircle className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm">Regulatory Verification Incomplete</h3>
-              <p className="text-xs text-amber-700 mt-0.5">
-                Upload your State Pollution Control Board license and E-Waste Authorization to accept pickups.
-              </p>
-            </div>
-          </div>
-          <Link href="/recycler/verification">
-            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none">
-              Complete Verification
-            </Button>
-          </Link>
-        </div>
-      )}
-
       {/* Recycler Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-gray-900">Facility Operations Hub</h1>
-            <Badge variant={isVerified ? "success" : "warning"}>
-              {stats.verificationStatus}
-            </Badge>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Facility Operations Hub</h1>
           <p className="mt-1 text-xs text-gray-500">
             Monitor incoming waste batches, process chain-of-custody, and issue recycling proofs.
           </p>
         </div>
 
         <div className="flex gap-3">
-          <Link href="/recycler/verification">
-            <Button variant="outline" size="sm">
-              <FiShield className="mr-1.5 h-4 w-4" /> Certification Status
-            </Button>
-          </Link>
           <Link href="/recycler/pickups">
-            <Button size="sm">
-              <FiTruck className="mr-1.5 h-4 w-4" /> Dispatch Logistics
-            </Button>
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-xs font-semibold text-white">
+              <FiTruck className="h-4 w-4" /> Dispatch Logistics
+            </span>
           </Link>
         </div>
       </div>

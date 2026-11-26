@@ -75,7 +75,6 @@ export default function Navbar() {
   const recyclerLinks = [
     { href: "/recycler/dashboard", label: "Dashboard" },
     { href: "/recycler/pickups", label: "Incoming Requests" },
-    { href: "/recycler/verification", label: "Verification" },
   ];
 
   const links = user

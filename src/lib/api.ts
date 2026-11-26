@@ -362,7 +362,6 @@ export async function getRecyclersAPI(params?: { city?: string; capability?: str
 
 export async function getRecyclerDashboardAPI() {
   return fetchAPI<{
-    verificationStatus: string;
     pendingPickups: number;
     inProgressPickups: number;
     completedPickups: number;
@@ -376,28 +375,5 @@ export async function getRecyclerDashboardAPI() {
       itemCount: number;
       estimatedWeight: number;
     }>;
-  }>("/api/recycler/dashboard");
-}
-
-// ---- Recycler Verification API ----
-
-export async function updateRecyclerProfileAPI(data: {
-  businessName?: string;
-  licenseNumber?: string;
-  registrationNumber?: string;
-  description?: string;
-  facilityAddress?: string;
-  capacity?: number;
-  capabilities?: string[];
-}) {
-  return fetchAPI("/api/recycler/profile", {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function submitVerificationAPI() {
-  return fetchAPI("/api/recycler/verify", {
-    method: "POST",
-  });
+  }>("/api/dashboard/stats");
 }

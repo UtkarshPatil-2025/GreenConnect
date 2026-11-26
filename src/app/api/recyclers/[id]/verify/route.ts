@@ -71,6 +71,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           where: { id },
           data: {
             isVerified: false,
+            isActive: false,
           },
         });
       }

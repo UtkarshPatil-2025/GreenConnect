@@ -13,7 +13,6 @@ import {
   FiSettings,
   FiShield,
   FiStar,
-  FiCheckCircle,
   FiChevronLeft,
 } from "react-icons/fi";
 
@@ -35,7 +34,6 @@ const generatorLinks: SidebarLink[] = [
 const recyclerLinks: SidebarLink[] = [
   { href: "/recycler/dashboard", label: "Dashboard", icon: <FiHome className="h-5 w-5" /> },
   { href: "/recycler/pickups", label: "Incoming Pickups", icon: <FiTruck className="h-5 w-5" /> },
-  { href: "/recycler/verification", label: "Verification", icon: <FiCheckCircle className="h-5 w-5" /> },
   { href: "/recycler/reviews", label: "Reviews", icon: <FiStar className="h-5 w-5" /> },
   { href: "/recycler/settings", label: "Settings", icon: <FiSettings className="h-5 w-5" /> },
 ];

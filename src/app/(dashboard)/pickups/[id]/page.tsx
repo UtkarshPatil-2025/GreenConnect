@@ -13,7 +13,6 @@ import {
   FiCheckCircle,
   FiClock,
   FiTruck,
-  FiShield,
   FiCpu,
   FiPhone,
   FiAward,
@@ -236,7 +235,7 @@ export default function PickupDetailPage() {
               </div>
             </div>
             <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 col-span-2 sm:col-span-1">
-              <div className="text-gray-500">Certified Facility</div>
+              <div className="text-gray-500">Recycler Facility</div>
               <div className="font-semibold text-primary-700 mt-0.5">
                 {pickup.recycler?.name || "GreenCircle Processing Hub"}
               </div>
@@ -248,7 +247,7 @@ export default function PickupDetailPage() {
         <div className="space-y-6">
           <Card className="p-6">
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-              Verified Processing Recycler
+              Assigned Recycler
             </h3>
 
             <div className="flex items-center gap-3">
@@ -259,9 +258,6 @@ export default function PickupDetailPage() {
                 <h4 className="font-bold text-gray-900 text-sm">
                   {pickup.recycler?.name || "EcoRecycle Systems Ltd"}
                 </h4>
-                <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-medium mt-0.5">
-                  <FiShield className="h-3.5 w-3.5" /> Verified Tier 1 Partner
-                </div>
               </div>
             </div>
 
@@ -269,10 +265,6 @@ export default function PickupDetailPage() {
               <div className="flex items-center justify-between">
                 <span>Facility Contact:</span>
                 <span className="font-medium text-gray-900">{pickup.recycler?.phone || "+91 91234 56789"}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Inspection Grade:</span>
-                <span className="font-bold text-primary-700">CPCB Grade A+</span>
               </div>
             </div>
           </Card>

@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { apiResponse, apiError } from "@/lib/utils";
 
@@ -15,9 +16,13 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: Record<string, unknown> = {
-      isVerified: true,
+    const where: Prisma.RecyclerWhereInput = {
       isActive: true,
+      NOT: {
+        verification: {
+          is: { status: "REJECTED" },
+        },
+      },
     };
 
     if (capability) {

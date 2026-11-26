@@ -149,7 +149,7 @@ export default function PickupsPage() {
           </div>
           <h3 className="text-lg font-bold text-gray-900">No pickups found</h3>
           <p className="mt-1 text-sm text-gray-500 max-w-sm mx-auto">
-            You don&apos;t have any pickups matching this filter. Schedule a pickup to send your e-waste to certified recyclers.
+            You don&apos;t have any pickups matching this filter. Schedule a pickup to send your e-waste to a recycler.
           </p>
           <div className="mt-6">
             <Link href="/pickups/new">

@@ -5,7 +5,7 @@ import { Toaster } from "react-hot-toast";
 export const metadata: Metadata = {
   title: "GreenCircuit - E-Waste Management",
   description:
-    "Responsible e-waste recycling made simple. Connect with verified recyclers, schedule pickups, and track your environmental impact.",
+    "Responsible e-waste recycling made simple. Find recyclers, schedule pickups, and track your environmental impact.",
 };
 
 export default function RootLayout({

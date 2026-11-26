@@ -124,7 +124,7 @@ export default function SignupPage() {
               <FiTruck className="h-5 w-5" />
             </div>
             <span className="mt-2 text-sm font-bold">Recycler Facility</span>
-            <span className="text-[11px] text-gray-500">Verified Processor</span>
+            <span className="text-[11px] text-gray-500">Recycling Facility</span>
           </button>
         </div>
       </div>

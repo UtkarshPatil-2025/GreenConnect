@@ -236,7 +236,7 @@ export default function GeneratorDashboard() {
             </div>
             <h3 className="mt-4 font-bold text-gray-900">No pickups scheduled yet</h3>
             <p className="mt-1 text-xs text-gray-500 max-w-sm mx-auto">
-              List the e-waste items sitting around your home or office, then book a verified recycler to collect them.
+              List the e-waste items sitting around your home or office, then book a recycler to collect them.
             </p>
             <div className="mt-6 flex justify-center gap-3">
               <Link href="/listings/new">

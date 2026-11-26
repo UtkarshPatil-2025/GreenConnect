@@ -27,10 +27,10 @@ export default function AuthLayout({
 
           <div className="mt-20">
             <h2 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-              Turn your old tech into verified circular resources.
+              Turn your old tech into part of a circular future.
             </h2>
             <p className="mt-4 text-primary-100 text-sm leading-relaxed max-w-md">
-              A trusted regulatory-compliant portal linking waste generators with authorized recycling processors through live GPS tracking and blockchain-verified manifests.
+              Connect with recycling facilities, track pickups, and keep digital handover records in one place.
             </p>
           </div>
         </div>
@@ -41,8 +41,8 @@ export default function AuthLayout({
               <FiShield className="h-5 w-5" />
             </div>
             <div className="text-xs">
-              <p className="font-semibold text-white">100% Certified Recyclers</p>
-              <p className="text-primary-200">Strict regulatory vetting & pollution clearances</p>
+              <p className="font-semibold text-white">Recycler Network</p>
+              <p className="text-primary-200">Browse facilities and pickup options</p>
             </div>
           </div>
 
