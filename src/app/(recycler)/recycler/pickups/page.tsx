@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getPickupsAPI, updatePickupStatusAPI, updateWasteItemProcessingAPI } from "@/lib/api";
 import type { ProcessingUpdateInput } from "@/lib/validations";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -129,12 +129,10 @@ export default function RecyclerPickupsPage() {
   };
 
   const handleProcessingUpdate = async (
-    event: FormEvent,
     pickupId: string,
     itemId: string,
     status: ProcessingStage,
   ) => {
-    event.preventDefault();
     const notes = notesByItem[itemId]?.trim() || "";
     if (notes.length < 3) {
       toast.error("Add a short note describing what was done to this item.");
@@ -316,7 +314,10 @@ export default function RecyclerPickupsPage() {
                             {nextStages.length > 0 ? (
                               <form
                                 className="mt-4 space-y-3"
-                                onSubmit={(event) => handleProcessingUpdate(event, pickup.id, item.id, selectedStage)}
+                                onSubmit={(event) => {
+                                  event.preventDefault();
+                                  handleProcessingUpdate(pickup.id, item.id, selectedStage);
+                                }}
                               >
                                 {nextStages.length > 1 && (
                                   <label className="block text-xs font-medium text-gray-700">
@@ -351,7 +352,18 @@ export default function RecyclerPickupsPage() {
                                     className="mt-1 w-full resize-y rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                                   />
                                 </label>
-                                <div className="flex justify-end">
+                                <div className="flex flex-wrap justify-end gap-2">
+                                  {nextStages.includes("COMPLETED") && selectedStage !== "COMPLETED" && (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      loading={updatingItemId === item.id}
+                                      disabled={!notesByItem[item.id]?.trim()}
+                                      onClick={() => handleProcessingUpdate(pickup.id, item.id, "COMPLETED")}
+                                    >
+                                      Complete item
+                                    </Button>
+                                  )}
                                   <Button
                                     type="submit"
                                     size="sm"

@@ -43,7 +43,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       where: { id: itemId },
       include: {
         pickup: {
-          select: { id: true, recyclerId: true, status: true },
+          select: { id: true, recyclerId: true, generatorId: true, status: true },
         },
       },
     });
@@ -85,6 +85,23 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         },
       });
 
+      if (parsed.data.status === "COMPLETED") {
+        const itemName = item.description || item.category.replace(/_/g, " ").toLowerCase();
+        await tx.notification.create({
+          data: {
+            userId: item.pickup.generatorId,
+            title: "Item recycling completed",
+            message: `${itemName} has been completely recycled. Processing for this item is now complete.`,
+            type: "PICKUP_UPDATE",
+            data: JSON.stringify({
+              pickupId: item.pickup.id,
+              itemId: item.id,
+              status: "COMPLETED",
+            }),
+          },
+        });
+      }
+
       return true;
     });
     if (!updated) {
@@ -98,7 +115,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    return apiResponse(updatedItem, "Recycling update posted successfully");
+    return apiResponse(
+      updatedItem,
+      parsed.data.status === "COMPLETED"
+        ? "Item processing completed and customer notified"
+        : "Recycling update posted successfully",
+    );
   } catch (error) {
     console.error("Update waste processing error:", error);
     return apiError("Internal server error", 500);
