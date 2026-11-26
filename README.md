@@ -33,6 +33,7 @@
    - QR-coded item manifests
    - ESG sustainability metrics (CO₂ emissions avoided, kg diverted from landfill)
    - Eco-credit reward points for circular economy participation
+   - Personalized downloadable GreenCircuit certificate after earning five community stars
    - Public directory of verified recyclers with ratings & reviews
 
 ---

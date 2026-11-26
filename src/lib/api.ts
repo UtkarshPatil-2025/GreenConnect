@@ -248,6 +248,17 @@ export async function getDashboardStatsAPI() {
   }>("/api/dashboard/stats");
 }
 
+export interface CertificateEligibility {
+  eligible: boolean;
+  communityStars: number;
+  requiredStars: number;
+  recipientName: string | null;
+}
+
+export async function getCertificateEligibilityAPI() {
+  return fetchAPI<CertificateEligibility>("/api/certificate");
+}
+
 // ---- Waste Listings API ----
 
 export interface WasteListingSummary {
