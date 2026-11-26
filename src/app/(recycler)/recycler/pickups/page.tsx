@@ -150,7 +150,11 @@ export default function RecyclerPickupsPage() {
         delete next[itemId];
         return next;
       });
-      toast.success("Recycling update shared with the customer.");
+      toast.success(
+        status === "COMPLETED"
+          ? "Item marked as processing complete."
+          : "Recycling update shared with the customer.",
+      );
       await loadPickups();
     } catch (cause: unknown) {
       toast.error(cause instanceof Error ? cause.message : "Could not post recycling update.");
@@ -354,7 +358,7 @@ export default function RecyclerPickupsPage() {
                                     loading={updatingItemId === item.id}
                                     disabled={nextStages.length === 0 || !notesByItem[item.id]?.trim()}
                                   >
-                                    Post update
+                                    {selectedStage === "COMPLETED" ? "Complete item" : "Post update"}
                                   </Button>
                                 </div>
                               </form>

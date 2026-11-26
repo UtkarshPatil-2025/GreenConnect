@@ -6,6 +6,7 @@ import { getCertificateEligibilityAPI, getDashboardStatsAPI } from "@/lib/api";
 import type { CertificateEligibility } from "@/lib/api";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { jsPDF } from "jspdf";
 import { FiAward, FiDownload, FiStar, FiTruck, FiTrendingUp } from "react-icons/fi";
 
 interface RewardStats {
@@ -16,12 +17,14 @@ interface RewardStats {
   co2Saved: number;
 }
 
+type JsPdfConstructor = typeof import("jspdf").jsPDF;
+
 export default function RewardsPage() {
   const [stats, setStats] = useState<RewardStats | null>(null);
   const [certificate, setCertificate] = useState<CertificateEligibility | null>(null);
+  const [pdfConstructor, setPdfConstructor] = useState<JsPdfConstructor | null>(null);
   const [error, setError] = useState("");
   const [certificateError, setCertificateError] = useState("");
-  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     getDashboardStatsAPI()
@@ -42,15 +45,34 @@ export default function RewardsPage() {
       });
   }, []);
 
-  const downloadCertificate = async () => {
-    if (!certificate?.eligible || !certificate.recipientName) return;
+  useEffect(() => {
+    if (!certificate?.eligible) return;
 
-    setDownloading(true);
+    let active = true;
+    import("jspdf")
+      .then(({ jsPDF }) => {
+        if (active) setPdfConstructor(() => jsPDF);
+      })
+      .catch((cause: unknown) => {
+        if (active) {
+          setCertificateError(
+            cause instanceof Error ? cause.message : "Could not prepare your certificate.",
+          );
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [certificate?.eligible]);
+
+  const downloadCertificate = () => {
+    if (!certificate?.eligible || !certificate.recipientName || !pdfConstructor) return;
+
     setCertificateError("");
     try {
-      const { jsPDF } = await import("jspdf");
       const recipientName = certificate.recipientName.replace(/\s+/g, " ").trim();
-      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+      const pdf = new pdfConstructor({ orientation: "landscape", unit: "mm", format: "a4" });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
@@ -119,8 +141,6 @@ export default function RewardsPage() {
       setCertificateError(
         cause instanceof Error ? cause.message : "Could not generate your certificate.",
       );
-    } finally {
-      setDownloading(false);
     }
   };
 
@@ -172,10 +192,16 @@ export default function RewardsPage() {
                   <p className="mt-1 text-sm text-gray-600">
                     Congratulations, {certificate.recipientName}! Your five-star certificate is ready to download.
                   </p>
+                ) : certificate ? (
+                  <p className="mt-1 text-sm text-gray-600">
+                    Earn {Math.max(0, certificate.requiredStars - certificate.communityStars)} more community star(s)
+                    to unlock your personalized certificate.
+                  </p>
                 ) : (
                   <p className="mt-1 text-sm text-gray-600">
-                    Earn {Math.max(0, (certificate?.requiredStars ?? 5) - stats.communityStars)} more community star(s)
-                    to unlock your personalized certificate.
+                    {certificateError
+                      ? "Certificate eligibility could not be checked."
+                      : "Checking certificate eligibility..."}
                   </p>
                 )}
                 {certificateError && (
@@ -184,12 +210,12 @@ export default function RewardsPage() {
               </div>
               <Button
                 className="shrink-0"
-                disabled={!certificate?.eligible}
-                loading={downloading}
+                disabled={!certificate?.eligible || !pdfConstructor}
+                loading={certificate?.eligible && !pdfConstructor}
                 onClick={downloadCertificate}
               >
                 <FiDownload aria-hidden="true" />
-                Download certificate
+                {pdfConstructor ? "Download certificate" : "Preparing certificate"}
               </Button>
             </Card>
           </>
