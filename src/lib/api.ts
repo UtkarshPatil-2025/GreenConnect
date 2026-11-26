@@ -3,6 +3,8 @@
  * Handles authentication headers and error responses
  */
 
+import type { CreatePickupInput } from "@/lib/validations";
+
 interface APIResponse<T = unknown> {
   success: boolean;
   message: string;
@@ -292,16 +294,7 @@ export async function getPickupByIdAPI(id: string) {
   }>(`/api/pickups/${id}`);
 }
 
-export async function createPickupAPI(data: {
-  listingIds: string[];
-  scheduledDate: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  specialInstructions?: string;
-  recyclerId?: string;
-}) {
+export async function createPickupAPI(data: CreatePickupInput) {
   return fetchAPI("/api/pickups", {
     method: "POST",
     body: JSON.stringify(data),

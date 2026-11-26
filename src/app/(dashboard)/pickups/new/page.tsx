@@ -59,10 +59,8 @@ export default function NewPickupPage() {
         ]);
 
         if (listingsRes.success && listingsRes.data) {
-          // Filter to items that are not yet picked up
-          const available = listingsRes.data.filter(
-            (listing) => listing.status === "ACTIVE" || listing.status === "DRAFT",
-          );
+          // Pickup requests can only be created for active listings.
+          const available = listingsRes.data.filter((listing) => listing.status === "ACTIVE");
           setListings(available);
           if (available.length > 0) {
             setSelectedListingIds([available[0].id]);
@@ -117,12 +115,13 @@ export default function NewPickupPage() {
     try {
       const res = await createPickupAPI({
         listingIds: selectedListingIds,
-        scheduledDate: new Date(scheduledDate).toISOString(),
-        address,
+        scheduledAt: new Date(scheduledDate).toISOString(),
+        isInstant: false,
+        addressLine1: address,
         city,
         state,
-        pincode,
-        specialInstructions: specialInstructions || undefined,
+        postalCode: pincode,
+        instructions: specialInstructions || undefined,
         recyclerId: selectedRecyclerId || undefined,
       });
 
