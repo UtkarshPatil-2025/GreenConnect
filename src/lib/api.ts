@@ -233,6 +233,7 @@ export async function getDashboardStatsAPI() {
     totalListings: number;
     activePickups: number;
     completedPickups: number;
+    communityStars: number;
     weightRecycled: number;
     co2Saved: number;
     rewardPoints: number;

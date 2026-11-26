@@ -36,11 +36,11 @@ export async function GET(_request: NextRequest) {
     const entries = activePickups.flatMap((entry) => {
       const user = usersById.get(entry.generatorId);
       if (!user) return [];
-      const stars = completedByUserId.get(entry.generatorId) || 0;
+      const stars = entry._count.id;
       return [{
         name: user.name,
         stars,
-        completedPickups: stars,
+        completedPickups: completedByUserId.get(entry.generatorId) || 0,
       }];
     });
     entries.sort((a, b) => b.stars - a.stars || a.name.localeCompare(b.name));

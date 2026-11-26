@@ -44,7 +44,7 @@ export default function LeaderboardPage() {
             </div>
           </div>
           <p className="mt-5 max-w-2xl text-sm leading-6 text-emerald-50">
-            Your name appears once you schedule an active pickup. Each completed pickup earns one star.
+            Each scheduled pickup earns one star. Cancelled pickups do not count.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export default function LeaderboardPage() {
             <div className="p-10 text-center">
               <FiStar className="mx-auto h-8 w-8 text-amber-400" aria-hidden="true" />
               <h2 className="mt-3 font-bold text-gray-900">The board is ready for its first pickup</h2>
-              <p className="mt-1 text-sm text-gray-500">Scheduled pickups will appear here; completed pickups earn stars.</p>
+              <p className="mt-1 text-sm text-gray-500">Scheduled pickups earn stars; cancelled pickups are excluded.</p>
             </div>
           )}
         </Card>

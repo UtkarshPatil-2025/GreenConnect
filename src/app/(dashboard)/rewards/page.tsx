@@ -9,6 +9,7 @@ import { FiAward, FiStar, FiTruck, FiTrendingUp } from "react-icons/fi";
 
 interface RewardStats {
   rewardPoints: number;
+  communityStars: number;
   completedPickups: number;
   weightRecycled: number;
   co2Saved: number;
@@ -51,7 +52,7 @@ export default function RewardsPage() {
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <RewardMetric icon={<FiAward />} label="Reward points" value={stats.rewardPoints.toLocaleString()} tint="bg-amber-50 text-amber-600" />
-              <RewardMetric icon={<FiStar />} label="Community stars" value={stats.completedPickups.toLocaleString()} tint="bg-yellow-50 text-yellow-600" />
+              <RewardMetric icon={<FiStar />} label="Community stars" value={stats.communityStars.toLocaleString()} tint="bg-yellow-50 text-yellow-600" />
               <RewardMetric icon={<FiTruck />} label="Completed pickups" value={stats.completedPickups.toLocaleString()} tint="bg-primary-50 text-primary-700" />
               <RewardMetric icon={<FiTrendingUp />} label="Weight recycled" value={`${stats.weightRecycled.toFixed(1)} kg`} tint="bg-emerald-50 text-emerald-700" />
             </div>
@@ -60,8 +61,8 @@ export default function RewardsPage() {
               <div>
                 <h2 className="font-bold text-gray-900">How community stars work</h2>
                 <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-600">
-                  You earn one public leaderboard star when a pickup is completed. Scheduling alone does not award a star.
-                  Reward points continue to reflect the recycling impact recorded for your pickups.
+                  Each non-cancelled scheduled pickup earns one public leaderboard star. Reward points continue to reflect
+                  the recycling impact recorded for your pickups.
                 </p>
               </div>
               <Link href="/leaderboard" className="shrink-0">
