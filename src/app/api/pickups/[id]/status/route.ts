@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { status, agentLat, agentLng, notes, actualWeight } = body;
+    const { status, agentLat, agentLng, notes, actualWeight, otpCode } = body;
 
     if (!status) {
       return apiError("Status is required", 400);
@@ -85,6 +85,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         `Invalid status transition from ${pickup.status} to ${status}`,
         400,
       );
+    }
+
+    if (status === "PICKED_UP") {
+      if (typeof otpCode !== "string" || !/^\d{4}$/.test(otpCode)) {
+        return apiError("Enter the four-digit handover OTP", 400);
+      }
+      if (otpCode !== pickup.otpCode) {
+        return apiError("The handover OTP is incorrect", 400);
+      }
     }
 
     if (

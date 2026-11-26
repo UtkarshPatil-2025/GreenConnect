@@ -84,6 +84,7 @@ export default function RecyclerPickupsPage() {
   const [loadError, setLoadError] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+  const [handoverOtps, setHandoverOtps] = useState<Record<string, string>>({});
   const [notesByItem, setNotesByItem] = useState<Record<string, string>>({});
   const [stageByItem, setStageByItem] = useState<Record<string, ProcessingStage>>({});
 
@@ -103,10 +104,21 @@ export default function RecyclerPickupsPage() {
     loadPickups();
   }, []);
 
-  const handleUpdateStatus = async (id: string, nextStatus: string) => {
+  const handleUpdateStatus = async (id: string, nextStatus: string, otpCode?: string) => {
     setUpdatingId(id);
     try {
-      await updatePickupStatusAPI(id, nextStatus);
+      await updatePickupStatusAPI(
+        id,
+        nextStatus,
+        otpCode ? { otpCode } : undefined,
+      );
+      if (nextStatus === "PICKED_UP") {
+        setHandoverOtps((current) => {
+          const next = { ...current };
+          delete next[id];
+          return next;
+        });
+      }
       toast.success(`Pickup updated to ${formatStage(nextStatus)}.`);
       await loadPickups();
     } catch (cause: unknown) {
@@ -202,7 +214,53 @@ export default function RecyclerPickupsPage() {
                       <div className="font-bold text-gray-900">{pickup.itemCount} item(s)</div>
                       <div className="text-gray-500">~{pickup.estimatedWeight} kg</div>
                     </div>
-                    {nextPickup ? (
+                    {nextPickup && pickup.status === "ARRIVED" ? (
+                      <form
+                        className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-end"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          handleUpdateStatus(
+                            pickup.id,
+                            nextPickup.status,
+                            handoverOtps[pickup.id],
+                          );
+                        }}
+                      >
+                        <label
+                          htmlFor={`handover-otp-${pickup.id}`}
+                          className="min-w-0 text-[11px] font-medium text-gray-700 sm:w-40 sm:flex-none"
+                        >
+                          Handover OTP from driver
+                          <input
+                            id={`handover-otp-${pickup.id}`}
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            pattern="[0-9]{4}"
+                            maxLength={4}
+                            value={handoverOtps[pickup.id] || ""}
+                            onChange={(event) => {
+                              const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
+                              setHandoverOtps((current) => ({ ...current, [pickup.id]: digits }));
+                            }}
+                            required
+                            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                            aria-describedby={`handover-otp-help-${pickup.id}`}
+                          />
+                          <span id={`handover-otp-help-${pickup.id}`} className="mt-1 block font-normal text-gray-500">
+                            Ask the doorstep collector for the 4-digit code.
+                          </span>
+                        </label>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          loading={updatingId === pickup.id}
+                          disabled={!/^\d{4}$/.test(handoverOtps[pickup.id] || "")}
+                        >
+                          Confirm handover
+                        </Button>
+                      </form>
+                    ) : nextPickup ? (
                       <Button
                         size="sm"
                         loading={updatingId === pickup.id}

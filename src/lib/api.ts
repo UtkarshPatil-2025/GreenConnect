@@ -421,10 +421,14 @@ export async function createPickupAPI(data: CreatePickupInput) {
   });
 }
 
-export async function updatePickupStatusAPI(id: string, status: string) {
+export async function updatePickupStatusAPI(
+  id: string,
+  status: string,
+  options: { otpCode?: string } = {},
+) {
   return fetchAPI(`/api/pickups/${id}/status`, {
     method: "PATCH",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, ...options }),
   });
 }
 
