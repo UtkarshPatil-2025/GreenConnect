@@ -41,12 +41,13 @@ async function refreshAccessToken(): Promise<string | null> {
     if (!res.ok) return null;
 
     const data = await res.json();
-    if (data.success && data.data?.accessToken) {
-      localStorage.setItem("accessToken", data.data.accessToken);
-      if (data.data.refreshToken) {
-        localStorage.setItem("refreshToken", data.data.refreshToken);
+    const tokens = data.data?.tokens;
+    if (data.success && tokens?.accessToken) {
+      localStorage.setItem("accessToken", tokens.accessToken);
+      if (tokens.refreshToken) {
+        localStorage.setItem("refreshToken", tokens.refreshToken);
       }
-      return data.data.accessToken;
+      return tokens.accessToken;
     }
     return null;
   } catch {
@@ -99,8 +100,10 @@ export async function fetchAPI<T = unknown>(
 
 export async function loginAPI(email: string, password: string) {
   return fetchAPI<{
-    accessToken: string;
-    refreshToken: string;
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+    };
     user: { id: string; name: string; email: string; role: string };
   }>("/api/auth/login", {
     method: "POST",

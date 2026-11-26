@@ -32,8 +32,8 @@ export default function LoginPage() {
     try {
       const res = await loginAPI(email, password);
       if (res.success && res.data) {
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("refreshToken", res.data.refreshToken);
+        localStorage.setItem("accessToken", res.data.tokens.accessToken);
+        localStorage.setItem("refreshToken", res.data.tokens.refreshToken);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         toast.success(`Welcome back, ${res.data.user.name}!`);
 
