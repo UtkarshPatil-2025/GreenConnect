@@ -81,7 +81,7 @@ export const createListingSchema = z.object({
   quantity: z.number().int().min(1).default(1),
   estimatedWeight: z.number().positive().optional(),
   condition: z.enum(["working", "damaged", "non-functional"]).optional(),
-  images: z.array(z.string()).max(5).optional(),
+  images: z.array(z.string().max(350_000)).max(5).optional(),
   isHazardous: z.boolean().default(false),
   hazardDetails: z.string().optional(),
   addressLine1: z.string().optional(),

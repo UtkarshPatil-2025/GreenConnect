@@ -22,7 +22,7 @@ interface AvailableListing {
   title: string;
   category: string;
   quantity: number;
-  estimatedWeight: number;
+  estimatedWeight: number | null;
   status: string;
 }
 
@@ -60,7 +60,9 @@ export default function NewPickupPage() {
 
         if (listingsRes.success && listingsRes.data) {
           // Filter to items that are not yet picked up
-          const available = listingsRes.data.filter((l) => l.status === "ACTIVE" || l.status === "DRAFT");
+          const available = listingsRes.data.filter(
+            (listing) => listing.status === "ACTIVE" || listing.status === "DRAFT",
+          );
           setListings(available);
           if (available.length > 0) {
             setSelectedListingIds([available[0].id]);

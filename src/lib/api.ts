@@ -174,22 +174,46 @@ export async function getDashboardStatsAPI() {
 
 // ---- Waste Listings API ----
 
+export interface WasteListingSummary {
+  id: string;
+  title: string;
+  category: string;
+  description: string | null;
+  quantity: number;
+  estimatedWeight: number | null;
+  condition: string | null;
+  status: string;
+  isHazardous: boolean;
+  createdAt: string;
+  images: string[];
+}
+
+export interface RecyclerSummary {
+  id: string;
+  name: string;
+  businessName: string;
+  rating: number;
+  reviewCount: number;
+  tier: string;
+  capabilities: string[];
+  city: string;
+  state: string;
+  isVerified: boolean;
+  description?: string;
+}
+
 export async function getListingsAPI() {
-  return fetchAPI<
-    Array<{
-      id: string;
-      title: string;
-      category: string;
-      description: string;
-      quantity: number;
-      estimatedWeight: number;
-      condition: string;
-      status: string;
-      isHazardous: boolean;
-      createdAt: string;
-      images?: string[];
-    }>
-  >("/api/waste/listings");
+  const response = await fetchAPI<{
+    listings: WasteListingSummary[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }>("/api/waste/listings");
+
+  return { ...response, data: response.data.listings };
 }
 
 export async function createListingAPI(data: {
@@ -200,11 +224,12 @@ export async function createListingAPI(data: {
   estimatedWeight: number;
   condition: string;
   isHazardous: boolean;
-  hazardousDetails?: string;
-  address?: string;
+  images: string[];
+  hazardDetails?: string;
+  addressLine1?: string;
   city?: string;
   state?: string;
-  pincode?: string;
+  postalCode?: string;
 }) {
   return fetchAPI("/api/waste/listings", {
     method: "POST",
@@ -295,21 +320,46 @@ export async function getRecyclersAPI(params?: { city?: string; capability?: str
   if (params?.capability) searchParams.set("capability", params.capability);
   if (params?.search) searchParams.set("search", params.search);
   const qs = searchParams.toString();
-  return fetchAPI<
-    Array<{
+  const response = await fetchAPI<{
+    recyclers: Array<{
       id: string;
-      name: string;
-      businessName?: string;
+      businessName: string;
       rating: number;
-      reviewCount: number;
+      totalReviews: number;
       tier: string;
       capabilities: string[];
-      city: string;
-      state: string;
       isVerified: boolean;
-      description?: string;
-    }>
-  >(`/api/recyclers${qs ? `?${qs}` : ""}`);
+      description: string | null;
+      user: {
+        name: string;
+        city: string | null;
+        state: string | null;
+      };
+    }>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }>(`/api/recyclers${qs ? `?${qs}` : ""}`);
+
+  return {
+    ...response,
+    data: response.data.recyclers.map((recycler) => ({
+      id: recycler.id,
+      name: recycler.businessName,
+      businessName: recycler.businessName,
+      rating: recycler.rating,
+      reviewCount: recycler.totalReviews,
+      tier: recycler.tier,
+      capabilities: recycler.capabilities,
+      city: recycler.user.city ?? "",
+      state: recycler.user.state ?? "",
+      isVerified: recycler.isVerified,
+      description: recycler.description ?? undefined,
+    })),
+  };
 }
 
 // ---- Recycler Dashboard API ----

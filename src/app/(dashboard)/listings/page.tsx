@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { getListingsAPI } from "@/lib/api";
+import Image from "next/image";
+import { getListingsAPI, type WasteListingSummary } from "@/lib/api";
 import { WASTE_CATEGORY_LABELS } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -11,26 +12,12 @@ import {
   FiPlus,
   FiCpu,
   FiAlertTriangle,
-  FiCheckCircle,
-  FiCalendar,
 } from "react-icons/fi";
 
-interface ListingItem {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  quantity: number;
-  estimatedWeight: number;
-  condition: string;
-  status: string;
-  isHazardous: boolean;
-  createdAt: string;
-}
-
 export default function ListingsPage() {
-  const [listings, setListings] = useState<ListingItem[]>([]);
+  const [listings, setListings] = useState<WasteListingSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -41,6 +28,9 @@ export default function ListingsPage() {
         }
       } catch (err) {
         console.error("Listings load error:", err);
+        setLoadError(
+          err instanceof Error ? err.message : "Unable to load your listings.",
+        );
       } finally {
         setLoading(false);
       }
@@ -73,11 +63,28 @@ export default function ListingsPage() {
         <div className="flex h-48 items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
         </div>
+      ) : loadError ? (
+        <div role="alert">
+          <Card className="p-8 text-center">
+            <p className="font-semibold text-red-700">Could not load your listings</p>
+            <p className="mt-1 text-sm text-gray-600">{loadError}</p>
+          </Card>
+        </div>
       ) : listings.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((item) => (
             <Card key={item.id} className="flex flex-col justify-between p-5 hover:shadow-md transition">
               <div>
+                {item.images[0] && (
+                  <Image
+                    src={item.images[0]}
+                    alt={item.title}
+                    width={640}
+                    height={400}
+                    unoptimized
+                    className="mb-4 h-40 w-full rounded-lg object-cover"
+                  />
+                )}
                 <div className="flex items-start justify-between gap-2">
                   <span className="rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700">
                     {WASTE_CATEGORY_LABELS[item.category] || item.category}
