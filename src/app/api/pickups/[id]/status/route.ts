@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/middleware";
+import { authenticate } from "@/lib/middleware";
 import { apiResponse, apiError, estimateCO2Savings } from "@/lib/utils";
 import { PickupStatus } from "@prisma/client";
 
@@ -25,15 +25,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Authenticate user (RECYCLER, PICKUP_AGENT, or ADMIN)
-    const authResult = await requireRole(
-      "RECYCLER",
-      "PICKUP_AGENT",
-      "ADMIN",
-    )(request);
+    const authResult = await authenticate(request);
     if (authResult instanceof Response) return authResult;
 
     const { user } = authResult;
+    const currentUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { role: true, isActive: true },
+    });
+    if (!currentUser || !currentUser.isActive) {
+      return apiError("Authentication required", 401);
+    }
+    if (!["RECYCLER", "PICKUP_AGENT", "ADMIN"].includes(currentUser.role)) {
+      return apiError("Insufficient permissions", 403);
+    }
 
     const body = await request.json();
     const { status, agentLat, agentLng, notes, actualWeight } = body;
@@ -55,7 +60,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return apiError("Pickup not found", 404);
     }
 
-    if (user.role === "RECYCLER") {
+    if (currentUser.role === "RECYCLER") {
       const recycler = await prisma.recycler.findUnique({
         where: { userId: user.userId },
         select: { id: true },
@@ -66,7 +71,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     if (
-      user.role === "PICKUP_AGENT" &&
+      currentUser.role === "PICKUP_AGENT" &&
       pickup.agentId &&
       pickup.agentId !== user.userId
     ) {
@@ -104,7 +109,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
 
       // If assigning an agent
-      if (status === "AGENT_ASSIGNED" && user.role === "PICKUP_AGENT") {
+      if (status === "AGENT_ASSIGNED" && currentUser.role === "PICKUP_AGENT") {
         pickupUpdateData.agentId = user.userId;
       }
 
