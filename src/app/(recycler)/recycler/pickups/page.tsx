@@ -86,7 +86,6 @@ export default function RecyclerPickupsPage() {
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const [handoverOtps, setHandoverOtps] = useState<Record<string, string>>({});
   const [notesByItem, setNotesByItem] = useState<Record<string, string>>({});
-  const [stageByItem, setStageByItem] = useState<Record<string, ProcessingStage>>({});
 
   const loadPickups = async () => {
     try {
@@ -143,11 +142,6 @@ export default function RecyclerPickupsPage() {
     try {
       await updateWasteItemProcessingAPI(pickupId, itemId, { status, notes });
       setNotesByItem((current) => ({ ...current, [itemId]: "" }));
-      setStageByItem((current) => {
-        const next = { ...current };
-        delete next[itemId];
-        return next;
-      });
       toast.success(
         status === "COMPLETED"
           ? "Item marked as processing complete."
@@ -290,7 +284,7 @@ export default function RecyclerPickupsPage() {
                     <div className="grid gap-3 lg:grid-cols-2">
                       {pickup.items.map((item) => {
                         const nextStages = getNextStages(item.processingStatus);
-                        const selectedStage = stageByItem[item.id] ?? nextStages[0] ?? "SORTED";
+                        const updateStages = nextStages.filter((stage) => stage !== "COMPLETED");
                         return (
                           <article key={item.id} className="min-w-0 rounded-xl border border-gray-200 bg-gray-50/70 p-4">
                             <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
@@ -311,31 +305,8 @@ export default function RecyclerPickupsPage() {
                               </p>
                             )}
 
-                            {nextStages.length > 0 ? (
-                              <form
-                                className="mt-4 space-y-3"
-                                onSubmit={(event) => {
-                                  event.preventDefault();
-                                  handleProcessingUpdate(pickup.id, item.id, selectedStage);
-                                }}
-                              >
-                                {nextStages.length > 1 && (
-                                  <label className="block text-xs font-medium text-gray-700">
-                                    Next milestone
-                                    <select
-                                      value={selectedStage}
-                                      onChange={(event) => {
-                                        const selected = nextStages.find((stage) => stage === event.target.value);
-                                        if (selected) {
-                                          setStageByItem((current) => ({ ...current, [item.id]: selected }));
-                                        }
-                                      }}
-                                      className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-                                    >
-                                      {nextStages.map((stage) => <option key={stage} value={stage}>{formatStage(stage)}</option>)}
-                                    </select>
-                                  </label>
-                                )}
+                            {item.processingStatus !== "COMPLETED" ? (
+                              <div className="mt-4 space-y-3">
                                 <label className="block text-xs font-medium text-gray-700">
                                   Update for the customer
                                   <textarea
@@ -352,28 +323,29 @@ export default function RecyclerPickupsPage() {
                                     className="mt-1 w-full resize-y rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                                   />
                                 </label>
-                                <div className="flex flex-wrap justify-end gap-2">
-                                  {nextStages.includes("COMPLETED") && selectedStage !== "COMPLETED" && (
+                                <div className="flex flex-wrap justify-between gap-2">
+                                  {updateStages.length > 0 && (
                                     <Button
                                       type="button"
                                       size="sm"
                                       loading={updatingItemId === item.id}
                                       disabled={!notesByItem[item.id]?.trim()}
-                                      onClick={() => handleProcessingUpdate(pickup.id, item.id, "COMPLETED")}
+                                      onClick={() => handleProcessingUpdate(pickup.id, item.id, updateStages[0])}
                                     >
-                                      Complete item
+                                      Post update
                                     </Button>
                                   )}
                                   <Button
-                                    type="submit"
+                                    type="button"
                                     size="sm"
                                     loading={updatingItemId === item.id}
-                                    disabled={nextStages.length === 0 || !notesByItem[item.id]?.trim()}
+                                    disabled={!notesByItem[item.id]?.trim()}
+                                    onClick={() => handleProcessingUpdate(pickup.id, item.id, "COMPLETED")}
                                   >
-                                    {selectedStage === "COMPLETED" ? "Complete item" : "Post update"}
+                                    Complete item
                                   </Button>
                                 </div>
-                              </form>
+                              </div>
                             ) : (
                               <p className="mt-3 text-xs font-medium text-emerald-700">Item processing is complete.</p>
                             )}

@@ -58,7 +58,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const nextStatuses = NEXT_PROCESSING_STATUSES[item.processingStatus] || [];
-    if (!nextStatuses.includes(parsed.data.status)) {
+    const completingItem =
+      parsed.data.status === "COMPLETED" &&
+      item.processingStatus !== "COMPLETED";
+    if (!nextStatuses.includes(parsed.data.status) && !completingItem) {
       return apiError(
         `Invalid processing update from ${item.processingStatus} to ${parsed.data.status}`,
         400,
