@@ -443,6 +443,29 @@ export async function updateWasteItemProcessingAPI(
   });
 }
 
+// ---- Notifications API ----
+
+export interface UserNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  data: string | null;
+  createdAt: string;
+}
+
+export async function getNotificationsAPI() {
+  return fetchAPI<{
+    notifications: UserNotification[];
+    unreadCount: number;
+  }>("/api/notifications");
+}
+
+export async function markNotificationsReadAPI() {
+  return fetchAPI("/api/notifications", { method: "PATCH" });
+}
+
 // ---- Recyclers API ----
 
 export async function getRecyclersAPI(params?: { city?: string; capability?: string; search?: string }) {

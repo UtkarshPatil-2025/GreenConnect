@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getNotificationsAPI } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   FiHome,
   FiList,
   FiTruck,
+  FiBell,
   FiPlus,
   FiAward,
   FiSettings,
@@ -27,6 +29,7 @@ const generatorLinks: SidebarLink[] = [
   { href: "/listings", label: "My Listings", icon: <FiList className="h-5 w-5" /> },
   { href: "/pickups/new", label: "Schedule Pickup", icon: <FiPlus className="h-5 w-5" /> },
   { href: "/pickups", label: "My Pickups", icon: <FiTruck className="h-5 w-5" /> },
+  { href: "/notifications", label: "Notifications", icon: <FiBell className="h-5 w-5" /> },
   { href: "/rewards", label: "Rewards", icon: <FiAward className="h-5 w-5" /> },
   { href: "/leaderboard", label: "Community board", icon: <FiStar className="h-5 w-5" /> },
   { href: "/settings", label: "Settings", icon: <FiSettings className="h-5 w-5" /> },
@@ -47,6 +50,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [role, setRole] = useState<string>("GENERATOR");
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -60,6 +64,31 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (role !== "GENERATOR") return;
+
+    let active = true;
+    const loadUnreadCount = async () => {
+      try {
+        const response = await getNotificationsAPI();
+        if (active && response.success) {
+          setUnreadNotifications(response.data.unreadCount);
+        }
+      } catch (error) {
+        console.error("Notification count error:", error);
+      }
+    };
+
+    loadUnreadCount();
+    const intervalId = window.setInterval(loadUnreadCount, 30000);
+    window.addEventListener("notifications-read", loadUnreadCount);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener("notifications-read", loadUnreadCount);
+    };
+  }, [role, pathname]);
 
   const links = role === "RECYCLER" ? recyclerLinks : generatorLinks;
 
@@ -114,6 +143,14 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     {link.icon}
                   </span>
                   {link.label}
+                  {link.href === "/notifications" && unreadNotifications > 0 && (
+                    <span
+                      aria-label={`${unreadNotifications} unread notifications`}
+                      className="ml-auto rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700"
+                    >
+                      {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                    </span>
+                  )}
                 </Link>
               );
             })}

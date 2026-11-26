@@ -177,6 +177,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             data: { status: "COMPLETED" },
           });
         }
+
+        await tx.notification.create({
+          data: {
+            userId: pickup.generatorId,
+            title: "Recycling process completed",
+            message: `Your pickup #${pickup.id.slice(0, 8)} has been fully recycled and completed.`,
+            type: "PICKUP_UPDATE",
+            data: JSON.stringify({ pickupId: pickup.id, status }),
+          },
+        });
       }
 
       return true;

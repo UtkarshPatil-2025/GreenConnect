@@ -44,7 +44,7 @@
 - **Database & ORM**: PostgreSQL + Prisma ORM (14 models)
 - **Security**: bcryptjs + jsonwebtoken + Zod schema validation
 - **Icons**: React Icons (Feather)
-- **Notifications**: React Hot Toast
+- **Notifications**: React Hot Toast + persistent in-app pickup completion alerts
 
 ---
 
